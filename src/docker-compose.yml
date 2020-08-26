@@ -1,0 +1,96 @@
+version: '3'
+services:
+
+#remember to set password when going online
+
+  mongodb:
+    container_name: mongodb
+    hostname: mongodb
+    image: mongo:3.0
+    expose:
+      - "27017"
+    networks:
+      - bridge
+      - crawler_network
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+    deploy:
+      replicas: 1
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:6.0-rc1
+    expose:
+      - "6379"
+    networks:
+      - bridge
+      - crawler_network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: always
+    deploy:
+      replicas: 1
+
+  crawler:
+    hostname: crawler
+    build:
+      context: ./crawling
+#      dockerfile: dockerfile
+    image: crawler
+    command: python main.py
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_NAME=mydb
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+#      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
+#      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
+    networks:
+      - crawler_network
+    depends_on:
+      - redis
+#    restart: always
+    deploy:
+      replicas: 1
+
+  broker:
+    hostname: broker
+    build:
+      context: ./broker
+#      dockerfile: dockerfile
+    image: broker
+    command: python main.py
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_NAME=mydb
+#      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
+#      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
+#      - SENTIMENT_ANALYSIS_INPUT_QUEUE=sentiment_analysis_input_queue
+#      - SENTIMENT_ANALYSIS_OUTPUT_QUEUE=sentiment_analysis_output_queue
+#      - JOB_EMBEDDING_INPUT_QUEUE=job_embedding_input_queue
+#      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
+    networks:
+      - bridge
+    depends_on:
+      - redis
+      - mongodb
+#    restart: always
+    deploy:
+      replicas: 1
+
+networks:
+  bridge:
+  crawler_network:
+
+volumes:
+  mongo-data:
+  redis-data:
