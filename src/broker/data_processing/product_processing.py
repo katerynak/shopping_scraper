@@ -39,11 +39,11 @@ def process_product(product_data):
 		if product_data["shop"] == "coop":
 			product.coop_id = product_data["id"]
 			product.coop_link = product_data["link"]
-			product.coop_image = product_data["image"]
+			product.coop_image = product_data["images"]
 		elif product_data["shop"] == "ah":
 			product.ah_id = product_data["id"]
 			product.ah_link = product_data["link"]
-			product.ah_image = product_data["image"]
+			product.ah_image = product_data["images"]
 
 		product.search_term = [product_data["search_term"]]
 		product.quantity = product_data["quantity"]

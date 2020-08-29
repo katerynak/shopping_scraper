@@ -52,6 +52,8 @@ services:
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
     networks:
       - crawler_network
+    volumes:
+      - images:/home/user/images
     depends_on:
       - redis
 #    restart: always
@@ -80,6 +82,8 @@ services:
 #      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
     networks:
       - bridge
+#    volumes:
+#      - images:/home/user/images
     depends_on:
       - redis
       - mongodb
@@ -94,3 +98,4 @@ networks:
 volumes:
   mongo-data:
   redis-data:
+  images:

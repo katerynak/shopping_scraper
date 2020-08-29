@@ -1,13 +1,13 @@
 import scrapy
 import ast
 
+from items import Product
+
 
 class CoopSpider(scrapy.Spider):
 	name = "coopSpider"
 	search_term = None
 	shop_search_url = "https://www.coop.nl/zoeken"
-
-	products = []
 
 	def __init__(self, search_term):
 		self.search_term = search_term
@@ -54,16 +54,15 @@ class CoopSpider(scrapy.Spider):
 			ids.append(id_item)
 
 		for i in range(len(names)):
-			product = {}
+			product = Product()
 			product["search_term"] = self.search_term
 			product["name"] = names[i]
-			product["image"] = images[i].split(",")[1][:-3]
 			product["price"] = prices[i]
 			product["quantity"] = quantities[i]
 			product["link"] = product_links[i]
 			product["shop"] = "coop"
 			product["id"] = ids[i]
-			self.products.append(product)
+			product["image_urls"] = [images[i].split(",")[1][:-3]]
 			yield product
 
 		next_page_active = response.xpath("//a[@rel='next']/../@class").get()

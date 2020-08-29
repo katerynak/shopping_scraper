@@ -40,7 +40,9 @@ def set_settings(settings):
     settings.set("AUTOTHROTTLE_TARGET_CONCURRENCY", 1.0)
     settings.set("COOKIES_ENABLED", False)
     settings.set("DOWNLOAD_DELAY", 3)
-    settings.set('ITEM_PIPELINES', {'__main__.SendToOut': 1})
+    settings.set('ITEM_PIPELINES', {'scrapy.pipelines.images.ImagesPipeline': 1,
+                                    '__main__.SendToOut': 2})
+    settings.set('IMAGES_STORE', "images")
 
 
 class SendToOut(object):

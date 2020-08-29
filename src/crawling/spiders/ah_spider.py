@@ -1,13 +1,13 @@
 import scrapy
 
+from items import Product
+
 
 class AHSpider(scrapy.Spider):
 	name = "ahSpider"
 	search_term = None
 	#TODO: try to not use this url
 	shop_search_url = "https://www.ah.nl/zoeken"
-
-	products = []
 
 	def __init__(self, search_term):
 		self.search_term = search_term
@@ -50,10 +50,9 @@ class AHSpider(scrapy.Spider):
 		product_links = [product_links[i] for i in range(0, len(product_links), 2)]
 
 		for i in range(len(names)):
-			product = {}
+			product = Product()
 			product["search_term"] = self.search_term
 			product["name"] = names[i]
-			product["image"] = images[i]
 			product["price"] = prices[i]
 			product["quantity"] = quantities[i]
 			product["link"] = product_links[i]
@@ -62,6 +61,6 @@ class AHSpider(scrapy.Spider):
 			for el in elements:
 				if "wi" in el:
 					product["id"] = el[2:]
+			product["image_urls"] = [images[i]]
 
-			self.products.append(product)
 			yield product
