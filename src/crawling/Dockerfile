@@ -10,7 +10,8 @@ RUN pip install redis
 RUN pip install pillow
 
 
-COPY . .
+COPY ./data_collections ./data_collections
+COPY ./crawling .
 RUN chown -R user:user /home/user
 USER user
 

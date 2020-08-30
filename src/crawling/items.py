@@ -3,8 +3,7 @@ from scrapy import Item, Field
 
 class Product(Item):
 	"""
-	product item definition, images field will be filled automatically by
-	the ImagesPipeline
+	product item definition
 	"""
 	name = Field()
 	search_term = Field()
@@ -14,4 +13,7 @@ class Product(Item):
 	shop = Field()
 	id = Field()
 	image_urls = Field()
+	# will be filled automatically by the ImagesPipeline
 	images = Field()
+	# pillow image that will be loaded from custom pipeline
+	image = Field()

@@ -37,8 +37,8 @@ services:
   crawler:
     hostname: crawler
     build:
-      context: ./crawling
-#      dockerfile: dockerfile
+      context: ./
+      dockerfile: ./crawling/Dockerfile
     image: crawler
     command: python main.py
     environment:
@@ -63,8 +63,8 @@ services:
   broker:
     hostname: broker
     build:
-      context: ./broker
-#      dockerfile: dockerfile
+      context: ./
+      dockerfile: ./broker/Dockerfile
     image: broker
     command: python main.py
     environment:

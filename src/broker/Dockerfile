@@ -7,7 +7,8 @@ RUN pip install mongoengine
 RUN pip install redis
 
 
-COPY . .
+COPY ./data_collections ./data_collections
+COPY ./broker .
 RUN chown -R user:user /home/user
 USER user
 
