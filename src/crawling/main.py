@@ -1,6 +1,5 @@
 import random
 import os
-from mongoengine import *
 import redis
 
 from scrapy.crawler import CrawlerRunner
@@ -10,6 +9,7 @@ from scrapy.utils.log import configure_logging
 
 from spiders.ah_spider import AHSpider
 from spiders.coop_spider import CoopSpider
+
 
 #TODO : make a pool of user agents to be rotated https://developers.whatismybrowser.com/useragents/explore/operating_system_name/linux/
 # https://www.scrapehero.com/how-to-fake-and-rotate-user-agents-using-python-3/
@@ -41,17 +41,8 @@ def set_settings(settings):
     settings.set("COOKIES_ENABLED", False)
     settings.set("DOWNLOAD_DELAY", 3)
     settings.set('ITEM_PIPELINES', {'scrapy.pipelines.images.ImagesPipeline': 1,
-                                    '__main__.SendToOut': 2})
+                                    'pipelines.SendToOut': 2})
     settings.set('IMAGES_STORE', "images")
-
-
-class SendToOut(object):
-    """
-    A pipeline that pushes the scraped data to redis queue
-    """
-    def process_item(self, item, spider):
-        redis_connection.lpush(crawler_output_queue, str(item))
-        return item
 
 
 if __name__=="__main__":
@@ -77,8 +68,7 @@ if __name__=="__main__":
     for product in products:
         random.shuffle(shop_spiders)
         for shop_spider in shop_spiders:
-            l = runner.crawl(shop_spider, product)
-            print(l)
+            l = runner.crawl(shop_spider, product, redis_connection, crawler_output_queue)
     d = runner.join()
     d.addBoth(lambda _: reactor.stop())
 

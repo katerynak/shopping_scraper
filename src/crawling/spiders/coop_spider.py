@@ -9,8 +9,10 @@ class CoopSpider(scrapy.Spider):
 	search_term = None
 	shop_search_url = "https://www.coop.nl/zoeken"
 
-	def __init__(self, search_term):
+	def __init__(self, search_term, redis_connection, output_queue):
 		self.search_term = search_term
+		self.redis_connection = redis_connection
+		self.output_queue = output_queue
 
 	def start_requests(self):
 		"""
