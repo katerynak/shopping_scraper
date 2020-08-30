@@ -42,9 +42,9 @@ services:
     image: crawler
     command: python main.py
     environment:
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
-      - MONGO_NAME=mydb
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_NAME=mydb
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 #      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
@@ -56,6 +56,7 @@ services:
       - images:/home/user/images
     depends_on:
       - redis
+      - mongodb
 #    restart: always
     deploy:
       replicas: 1
@@ -82,6 +83,7 @@ services:
 #      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
     networks:
       - bridge
+      - crawler_network
 #    volumes:
 #      - images:/home/user/images
     depends_on:

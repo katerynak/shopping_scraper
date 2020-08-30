@@ -38,6 +38,6 @@ if __name__ == "__main__":
 
 			if received_queue == os.environ["CRAWLER_OUTPUT_QUEUE"]:
 				print("received {}".format(received_input))
-				process_product(received_input)
+				# process_product(received_input)
 		except SyntaxError:
 			print("Data from %s not a valid python dict, discarding:\n %s" % (received_queue, received_input))

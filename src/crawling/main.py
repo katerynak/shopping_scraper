@@ -1,6 +1,7 @@
 import random
 import os
 import redis
+from mongoengine import *
 
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
@@ -41,8 +42,8 @@ def set_settings(settings):
     settings.set("COOKIES_ENABLED", False)
     settings.set("DOWNLOAD_DELAY", 3)
     settings.set('ITEM_PIPELINES', {'scrapy.pipelines.images.ImagesPipeline': 1,
-                                    # 'pipelines.LoadImages'
-                                    'pipelines.SendToOut': 2})
+                                    'pipelines.LoadImages': 2,
+                                    'pipelines.SaveItems': 3})
     settings.set('IMAGES_STORE', "images")
 
 
@@ -55,6 +56,10 @@ if __name__=="__main__":
     print("connecting to redis...")
     redis_connection = redis.Redis(host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], charset="utf-8")
     print("connected to redis")
+
+    print("creating connection to mongodb")
+    connect(os.environ["MONGODB_NAME"], host=os.environ["MONGODB_HOST"], port=int(os.environ["MONGODB_PORT"]))
+    print("connection to mongodb created")
 
     # shopping "input" list, defined here for the moment
     products = ["pizza"]
