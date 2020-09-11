@@ -1,5 +1,6 @@
 from PIL import Image
 from mongoengine.queryset.visitor import Q
+import datetime
 
 from data_collections.Product import Product
 from data_collections.ProductPrice import ProductPrice
@@ -48,31 +49,54 @@ class SaveItems(object):
 	"""
 
 	def process_item(self, item, spider):
+
 		# check if object already exists
+		id_present = True
 		if "id" in item.fields:
 			if item["shop"] == "coop":
 				product = Product.objects((Q(coop_id=item["id"])))
 			elif item["shop"] == "ah":
-				product = Product.objects((Q(coop_id=item["id"])))
+				product = Product.objects((Q(ah_id=item["id"])))
+		if product:
+			# the product from the shop was already inserted in the database
+			print("already exists!")
+		else:
+			# check for the products from other shop with the same name and quantity
+			id_present = False
+			product = Product.objects((Q(name=item["name"]) & Q(quantity=item["quantity"])))
 
 		# TODO: additional check based on name and/or image similarity + price updates
 
 		if product:
-			print("already exists!")
-			print(product[0])
+			print("already exists, checking for missing fields..")
+			modified = False
+			if not id_present:
+				print("adding new shop reference for an existing object")
+				shop = item["shop"] + "_"
+				product[shop+"id"] = item["id"]
+				product[shop+"link"] = item["link"]
+				product[shop+"image"] = item["image"].tobytes()
+				modified = True
+
+			# we are assuming that products with same ids cannot have names or quantities changed in time
+			# so we don't check name and quantity fields for now
+
+			if item["search_term"] not in product.search_term:
+				product.search_term.append(item["search_term"])
+				modified = True
+
+			if modified:
+				print("object modified")
+				product.last_update = datetime.datetime.utcnow()
+
 		else:
 			print("inserting new object..")
 			product = Product()
 			product.name = item["name"]
-
-			if item["shop"] == "coop":
-				product.coop_id = item["id"]
-				product.coop_link = item["link"]
-				product.coop_image = item["images"]
-			elif item["shop"] == "ah":
-				product.ah_id = item["id"]
-				product.ah_link = item["link"]
-				product.ah_image = item["images"]
+			shop = item["shop"] + "_"
+			product[shop + "id"] = item["id"]
+			product[shop + "link"] = item["link"]
+			product[shop + "image"] = item["image"].tobytes()
 
 			product.search_term = [item["search_term"]]
 			product.quantity = item["quantity"]

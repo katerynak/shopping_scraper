@@ -8,6 +8,7 @@ class AHSpider(scrapy.Spider):
 	search_term = None
 	#TODO: try to not use this url
 	shop_search_url = "https://www.ah.nl/zoeken"
+	shop_url = "https://www.ah.nl"
 
 	def __init__(self, search_term, redis_connection, output_queue):
 		self.search_term = search_term
@@ -21,7 +22,7 @@ class AHSpider(scrapy.Spider):
 		"""
 		params = {
 			'query': self.search_term,
-			'page': '100', # assuming the result can have a maximum of 100 pages
+			'page': '50', # assuming the result can have a maximum of 50 pages
 		}
 		yield scrapy.FormRequest(url=self.shop_search_url, formdata=params, method="GET", callback=self.parse)
 
@@ -49,7 +50,7 @@ class AHSpider(scrapy.Spider):
 		prices = [prices[i] + prices[i + 1] + prices[i + 2] for i in range(0, len(prices), 3)]
 		quantities = response.xpath("//span[@data-testhook='product-unit-size']/text()").getall()
 		product_links = response.xpath("//a[starts-with(@class, 'link_root')]/@href").getall()
-		product_links = [product_links[i] for i in range(0, len(product_links), 2)]
+		product_links = [self.shop_url + product_links[i] for i in range(0, len(product_links), 2)]
 
 		for i in range(len(names)):
 			product = Product()
