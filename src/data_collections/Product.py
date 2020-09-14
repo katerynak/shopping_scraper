@@ -14,5 +14,7 @@ class Product(DynamicDocument):
 	ah_id = IntField(required=False)
 	ah_image = BinaryField(required=False)
 	coop_image = BinaryField(required=False)
+	ah_name = StringField(required=False, max_length=100)
+	coop_name = StringField(required=False, max_length=100)
 	# brand = StringField(required=False, max_length=50)
 	# ingredients = ListField(required=False)

@@ -8,6 +8,7 @@ RUN pip install scrapy
 RUN pip install mongoengine
 RUN pip install redis
 RUN pip install pillow
+RUN pip install python-Levenshtein
 
 
 COPY ./data_collections ./data_collections

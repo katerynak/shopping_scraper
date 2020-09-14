@@ -3,7 +3,7 @@ import datetime
 
 
 class ProductPrice(DynamicDocument):
-	product_id = ObjectIdField(primary_key=True)
+	product_id = ObjectIdField(primary_key=False)
 	price = FloatField(required=True)
 	date = DateTimeField(default=datetime.datetime.utcnow)
 	shop = StringField(required=True, max_length=50)
