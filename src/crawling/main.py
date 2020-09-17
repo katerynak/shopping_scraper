@@ -47,8 +47,7 @@ def set_settings(settings):
 	settings.set('ITEM_PIPELINES', {'scrapy.pipelines.images.ImagesPipeline': 1,
 									'pipelines.LoadImages': 2,
 									'pipelines.SaveItems': 3,
-									#TODO: add a pipeline with notification to broker every n items added to the db
-									# or when finished
+									'pipelines.SendToOut': 4
 									})
 	settings.set('IMAGES_STORE', "images")
 
@@ -79,7 +78,7 @@ if __name__ == "__main__":
 	clean_database()
 
 	# shopping "input" list, defined here for the moment
-	products = ["pizza"]
+	products = ["melk"]
 	shop_spiders = [AHSpider, CoopSpider]
 	# spider shop list
 	# shop_spiders = [CoopSpider]

@@ -3,7 +3,7 @@ import redis
 import ast
 from mongoengine import *
 
-from data_processing.product_processing import process_product
+from data_processing.product_sorter import ProductSorter
 
 if __name__ == "__main__":
 	for env_var in ["CRAWLER_OUTPUT_QUEUE",
@@ -27,6 +27,8 @@ if __name__ == "__main__":
 	# for debugging purpose only
 	redis_c.flushall()
 
+	sorter = ProductSorter("memes")
+
 	while True:
 		task = redis_c.blpop(redis_queues, 0)
 		received_queue = task[0].decode("utf-8")
@@ -38,6 +40,8 @@ if __name__ == "__main__":
 
 			if received_queue == os.environ["CRAWLER_OUTPUT_QUEUE"]:
 				print("received {}".format(received_input))
+				sorter.compare(received_input["product_id"], received_input["shop"])
+
 				# process_product(received_input)
 		except SyntaxError:
 			print("Data from %s not a valid python dict, discarding:\n %s" % (received_queue, received_input))

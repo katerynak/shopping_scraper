@@ -1,58 +1,62 @@
 from data_collections.Product import Product
 from data_collections.ProductPrice import ProductPrice
+from data_processing.product_similarity import match_measures
 
 from mongoengine.queryset.visitor import Q
+from enum import Enum
 
 
-def process_product(product_data):
-	"""
-	processes product data coming from crawler, updates the dataset if needed
-	:param product_data:
-	:return:
-	"""
-	# debugging purpose only
-	# products_to_delete = Product.objects()
-	# products_to_delete.delete()
+class ProductSorter:
 
-	# products_to_delete = ProductPrice.objects()
-	# products_to_delete.delete()
+	def __init__(self, searchTerm):
+		self.searchTerm = searchTerm
+		self.best = None
 
-	#TODO: data validation
+	class Alternatives(Enum):
+		ALT1 = "alternative1"
+		ALT2 = "alternative2"
 
-	# check if object already exists
-	if "id" in product_data:
-		if product_data["shop"] == "coop":
-			product = Product.objects((Q(coop_id=product_data["id"])))
-		elif product_data["shop"] == "ah":
-			product = Product.objects((Q(coop_id=product_data["id"])))
+	# TODO: add comparison taking into account both price and shop ranking,
+	#    one way to do it can be taking n products with the best prices and to order them by ranking
+	def compare(self, product_id, shop):
+		"""
+		comparison based on unit price for now
+		"""
+		# retrieve the product in the database
+		product = Product.objects(Q(id=product_id))[0]
+		productPrice = ProductPrice.objects((Q(product_id=product_id) & Q(shop=shop))).order_by('-date')[0]
 
-	#TODO: additional check based on name and/or image similarity + price updates
+		if self.best is None:
+			self.best = {}
+			self.best_price = {}
+			self.best[self.Alternatives.ALT1] = product
+			self.best_price[self.Alternatives.ALT1] = productPrice
+		else:
+			alt = self.Alternatives.ALT1
+			matching_measures = match_measures(self.best[alt].quantity, product.quantity)
+			if matching_measures is None:
+				alt = self.Alternatives.ALT2
+				if alt not in self.best:
+					self.best[alt] = product
+					self.best_price[alt] = productPrice
+					return
+				else:
+					matching_measures = match_measures(self.best[alt].quantity, product.quantity)
 
-	if product:
-		print("already exists!")
-		print(product[0])
-	else:
-		print("inserting new object..")
-		product = Product()
-		product.name = product_data["name"]
-
-		if product_data["shop"] == "coop":
-			product.coop_id = product_data["id"]
-			product.coop_link = product_data["link"]
-			product.coop_image = product_data["images"]
-		elif product_data["shop"] == "ah":
-			product.ah_id = product_data["id"]
-			product.ah_link = product_data["link"]
-			product.ah_image = product_data["images"]
-
-		product.search_term = [product_data["search_term"]]
-		product.quantity = product_data["quantity"]
-		product.save()
-
-		# inserting product price
-		productPrice = ProductPrice()
-		productPrice.product_id = product.id
-		productPrice.price = float(product_data["price"].replace(",", "."))
-		productPrice.shop = product_data["shop"]
-
-		productPrice.save()
+			if matching_measures is None:
+				print("error")
+				print(self.best[alt].quantity)
+				print(product.quantity)
+			else:
+				best_q, product_q, best_m, product_m = matching_measures
+				best_unit_price = self.best_price[alt].price / best_q
+				product_unit_price = productPrice.price / product_q
+				if product_unit_price < best_unit_price:
+					self.best[alt] = product
+					self.best_price[alt] = productPrice
+					print("new best found!")
+					print(self.best[alt].name)
+					print(self.best_price[alt].price)
+					print(self.best_price[alt].shop)
+					print(self.best[alt].quantity)
+					print("----------------------")
