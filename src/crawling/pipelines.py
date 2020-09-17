@@ -1,6 +1,7 @@
 from PIL import Image
 from mongoengine.queryset.visitor import Q
 import datetime
+from copy import deepcopy
 
 from data_collections.Product import Product
 from data_collections.ProductPrice import ProductPrice
@@ -9,13 +10,18 @@ from product_similarity import same_product
 
 class SendToOut(object):
 	"""
-	Pushes the scraped data to redis queue
+	Pushes the scraped data id to redis queue
 	"""
 
-	def process_item(self, item, spider):
-
-		spider.redis_connection.lpush(spider.output_queue, str(dict(item)))
-		return item
+	def process_item(self, product_dict, spider):
+		product = product_dict["product"]
+		out_dict = {}
+		out_dict["product_id"] = str(product.id)
+		out_dict["search_term"] = product.search_term
+		out_dict["shop"] = product_dict["shop"]
+		out_dict["name"] = product.name
+		spider.redis_connection.lpush(spider.output_queue, str(out_dict))
+		return product
 
 
 class LoadImages(object):
@@ -39,7 +45,6 @@ class ValidateItems(object):
 	"""
 
 	def process_item(self, item, spider):
-
 		# to be implemented
 		return item
 
@@ -69,29 +74,27 @@ class SaveItems(object):
 	def process_item(self, item, spider):
 
 		# check if object already exists
-		# id_present = True
 		if "id" in item.fields:
 			if item["shop"] == "coop":
 				product = Product.objects((Q(coop_id=item["id"])))
 			elif item["shop"] == "ah":
 				product = Product.objects((Q(ah_id=item["id"])))
-			else:
-				print("error1!!!!!!")
-				# exit(0)
-		else:
-			print("error2!!!!!!")
-			# exit(0)
 
 		# case 1: product already exists in the db
 		if product:
 			print("already exists!")
 			product = product[0]
 			# check if the price is up to date
-			last_price = ProductPrice.objects(Q(product_id=product.id) & Q(shop=item["shop"])).order_by('-date')[0]
+			last_price = ProductPrice.objects((Q(product_id=product.id) & Q(shop=item["shop"]))).order_by('-date')[0]
 			if self.price_to_float(item["price"]) != last_price.price:
 				# update the price
+				product.last_update = datetime.datetime.utcnow()
+				product.save()
 				print("updating the price..")
 				self.update_price(item, product)
+			if item["shop_ranking"] != product[item["shop"]+"_"+"ranking"]:
+				print("updating the shop ranking..")
+				product[item["shop"] + "_" + "ranking"] = item["shop_ranking"]
 				product.last_update = datetime.datetime.utcnow()
 				product.save()
 		else:
@@ -107,26 +110,29 @@ class SaveItems(object):
 					for product2 in Product.objects:
 						if same_product(product2, item):
 							print("already exists, with a slightly different name / quantity!")
-							print("already exists, with a slightly different name / quantity!")
 							product = product2
-
+			else:
+				product = product[0]
 			# case 2: product already exists in another shop
 			if product:
+
 				print("already exists, inserting new shop info..")
 
 				shop = item["shop"] + "_"
-				product[shop+"id"] = item["id"]
-				product[shop+"link"] = item["link"]
-				product[shop+"image"] = item["image"].tobytes()
-				product[shop+"name"] = item["name"]
+				product[shop + "id"] = item["id"]
+				product[shop + "link"] = item["link"]
+				product[shop + "image"] = item["image"].tobytes()
+				product[shop + "name"] = item["name"]
+
+				product[shop + "ranking"] = item["shop_ranking"]
 
 				if item["search_term"] not in product.search_term:
 					product.search_term.append(item["search_term"])
 
-				self.update_price(item, product)
-
 				product.last_update = datetime.datetime.utcnow()
 				product.save()
+
+				self.update_price(item, product)
 
 			# case 3: product does not exist in the db
 			else:
@@ -138,11 +144,13 @@ class SaveItems(object):
 				product[shop + "link"] = item["link"]
 				product[shop + "image"] = item["image"].tobytes()
 
+				product[shop + "ranking"] = item["shop_ranking"]
+
 				product.search_term = [item["search_term"]]
 				product.quantity = item["quantity"]
 
 				# inserting product price
-				self.update_price(item, product)
 				product.save()
+				self.update_price(item, product)
 
-		return item
+		return {"product": deepcopy(product),  "shop": item["shop"]}

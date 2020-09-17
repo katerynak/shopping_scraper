@@ -17,3 +17,4 @@ class Product(Item):
 	images = Field()
 	# pillow image that will be loaded from custom pipeline
 	image = Field()
+	shop_ranking = Field()

@@ -60,6 +60,7 @@ class CoopSpider(scrapy.Spider):
 			product["search_term"] = self.search_term
 			product["name"] = names[i]
 			product["price"] = prices[i]
+			product["shop_ranking"] = i
 			product["quantity"] = quantities[i]
 			product["link"] = product_links[i]
 			product["shop"] = "coop"

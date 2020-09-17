@@ -59,6 +59,7 @@ class AHSpider(scrapy.Spider):
 			product["price"] = prices[i]
 			product["quantity"] = quantities[i]
 			product["link"] = product_links[i]
+			product["shop_ranking"] = i
 			product["shop"] = "ah"
 			elements = product["link"].split("/")
 			for el in elements:
