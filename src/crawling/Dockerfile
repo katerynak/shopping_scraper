@@ -12,6 +12,7 @@ RUN pip install python-Levenshtein
 
 
 COPY ./data_collections ./data_collections
+COPY ./data_processing/product_similarity.py ./
 COPY ./crawling .
 RUN chown -R user:user /home/user
 USER user
