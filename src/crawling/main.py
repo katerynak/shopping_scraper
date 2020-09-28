@@ -61,10 +61,29 @@ def clean_database():
 	products_to_delete.delete()
 
 
+def wait_for_input():
+	found_input = False
+
+	while not found_input:
+		print("waiting for an input")
+		task = redis_connection.blpop([products_input_queue], 0)
+		received_queue = task[0].decode("utf-8")
+		received_input = task[1].decode("utf-8")
+		print("received message from %s" % received_queue)
+		# run_spiders(JOB_SPIDERS, settings, received_input)
+		found_input = True
+	return received_input
+
+
 if __name__ == "__main__":
 
-	# TODO: assertions
+	for env_var in ["CRAWLER_OUTPUT_QUEUE", "CRAWLER_PRODUCTS_INPUT_QUEUE",
+					"MONGODB_NAME",
+					"REDIS_HOST", "REDIS_PORT", "MONGODB_HOST", "MONGODB_PORT"]:
+		assert env_var in os.environ, "%s environment variable should be defined." % env_var
+
 	crawler_output_queue = os.environ["CRAWLER_OUTPUT_QUEUE"]
+	products_input_queue = os.environ["CRAWLER_PRODUCTS_INPUT_QUEUE"]
 
 	# connecting to redis instance
 	print("connecting to redis...")
@@ -75,13 +94,13 @@ if __name__ == "__main__":
 	connect(os.environ["MONGODB_NAME"], host=os.environ["MONGODB_HOST"], port=int(os.environ["MONGODB_PORT"]))
 	print("connection to mongodb created")
 
+	# for debugging purposes
 	clean_database()
 
-	# shopping "input" list, defined here for the moment
-	products = ["melk"]
-	shop_spiders = [AHSpider, CoopSpider]
+	# waiting for the user input
+	products = [wait_for_input()]
 	# spider shop list
-	# shop_spiders = [CoopSpider]
+	shop_spiders = [AHSpider, CoopSpider]
 	settings = Settings()
 	set_settings(settings)
 	runner = CrawlerRunner(settings=settings)

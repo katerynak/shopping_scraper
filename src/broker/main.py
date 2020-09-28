@@ -6,7 +6,7 @@ from mongoengine import *
 from data_processing.product_sorter import ProductSorter
 
 if __name__ == "__main__":
-	for env_var in ["CRAWLER_OUTPUT_QUEUE",
+	for env_var in ["CRAWLER_OUTPUT_QUEUE", "BROKER_PRODUCTS_OUTPUT_QUEUE"
 					"MONGODB_NAME",
 					"REDIS_HOST", "REDIS_PORT", "MONGODB_HOST", "MONGODB_PORT"]:
 		assert env_var in os.environ, "%s environment variable should be defined." % env_var
@@ -37,10 +37,11 @@ if __name__ == "__main__":
 
 		try:
 			received_input = ast.literal_eval(received_input)
-
 			if received_queue == os.environ["CRAWLER_OUTPUT_QUEUE"]:
 				print("received {}".format(received_input))
-				sorter.compare(received_input["product_id"], received_input["shop"])
+				better = sorter.compare(received_input["product_id"], received_input["shop"])
+				# if better:
+				# 	send the result to the client
 
 				# process_product(received_input)
 		except SyntaxError:

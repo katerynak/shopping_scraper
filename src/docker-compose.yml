@@ -47,17 +47,16 @@ services:
       - MONGODB_NAME=mydb
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-#      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
-#      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
     networks:
       - crawler_network
-    volumes:
-      - images:/home/user/images
+#    volumes:
+#      - images:/home/user/images
     depends_on:
       - redis
       - mongodb
-#    restart: always
+    restart: always
     deploy:
       replicas: 1
 
@@ -74,22 +73,42 @@ services:
       - MONGODB_HOST=mongodb
       - MONGODB_PORT=27017
       - MONGODB_NAME=mydb
-#      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
-#      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
-#      - SENTIMENT_ANALYSIS_INPUT_QUEUE=sentiment_analysis_input_queue
-#      - SENTIMENT_ANALYSIS_OUTPUT_QUEUE=sentiment_analysis_output_queue
-#      - JOB_EMBEDDING_INPUT_QUEUE=job_embedding_input_queue
-#      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
+      - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
     networks:
       - bridge
       - crawler_network
-#    volumes:
-#      - images:/home/user/images
     depends_on:
       - redis
       - mongodb
-#    restart: always
+    deploy:
+      replicas: 1
+
+  client:
+    hostname: client
+    build:
+      context: ./
+      dockerfile: ./django_project/Dockerfile
+    image: client
+    ports:
+      - 8000:8000
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_NAME=mydb
+      - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
+      - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
+
+    networks:
+      - bridge
+    depends_on:
+      - redis
+      - mongodb
+    restart: always
     deploy:
       replicas: 1
 
@@ -100,4 +119,3 @@ networks:
 volumes:
   mongo-data:
   redis-data:
-  images:

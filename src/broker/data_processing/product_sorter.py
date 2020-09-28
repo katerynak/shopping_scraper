@@ -20,7 +20,7 @@ class ProductSorter:
 	#    one way to do it can be taking n products with the best prices and to order them by ranking
 	def compare(self, product_id, shop):
 		"""
-		comparison based on unit price for now
+		comparison based on unit price for now, if new product is more convenient then another returns true
 		"""
 		# retrieve the product in the database
 		product = Product.objects(Q(id=product_id))[0]
@@ -60,3 +60,6 @@ class ProductSorter:
 					print(self.best_price[alt].shop)
 					print(self.best[alt].quantity)
 					print("----------------------")
+					return True
+
+		return False
