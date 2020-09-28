@@ -46,8 +46,9 @@ def set_settings(settings):
 	settings.set("DOWNLOAD_DELAY", 3)
 	settings.set('ITEM_PIPELINES', {'scrapy.pipelines.images.ImagesPipeline': 1,
 									'pipelines.LoadImages': 2,
-									'pipelines.SaveItems': 3,
-									'pipelines.SendToOut': 4
+									'pipelines.ExtractMeasuresQuantities': 3,
+									'pipelines.SaveItems': 4,
+									'pipelines.SendToOut': 5
 									})
 	settings.set('IMAGES_STORE', "images")
 

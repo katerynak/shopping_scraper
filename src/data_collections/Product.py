@@ -7,6 +7,8 @@ class Product(DynamicDocument):
 	search_term = ListField(required=False)
 	last_update = DateTimeField(default=datetime.datetime.utcnow)
 	quantity = StringField(required=False, max_length=50)
+	comparison_quantity = FloatField(required=False)
+	comparison_measure = StringField(required=False, max_length=50)
 	coop_link = URLField(required=False)
 	ah_link = URLField(required=False)
 	# shop_ids = ListField(required=False)

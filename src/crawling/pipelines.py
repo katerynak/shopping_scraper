@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from data_collections.Product import Product
 from data_collections.ProductPrice import ProductPrice
-from product_similarity import same_product
+import product_similarity
 
 
 class SendToOut(object):
@@ -48,6 +48,18 @@ class ValidateItems(object):
 		# to be implemented
 		return item
 
+
+class ExtractMeasuresQuantities(object):
+	"""
+	Extracts measures and converts quantities in order to be able to compare the item to others
+	"""
+
+	def process_item(self, item, spider):
+		measure = product_similarity.find_measure(item["quantity"])
+		quantity = product_similarity.find_quantity(item["quantity"], measure)
+		item["comparison_quantity"], item["comparison_measure"] = \
+			product_similarity.convert_measure(quantity, measure)
+		return item
 
 class SaveItems(object):
 	"""
@@ -108,7 +120,7 @@ class SaveItems(object):
 				# exists in the db
 				if len(Product.objects) > 0:
 					for product2 in Product.objects:
-						if same_product(product2, item):
+						if product_similarity.same_product(product2, item):
 							print("already exists, with a slightly different name / quantity!")
 							product = product2
 			else:
@@ -148,6 +160,9 @@ class SaveItems(object):
 
 				product.search_term = [item["search_term"]]
 				product.quantity = item["quantity"]
+
+				product.comparison_quantity = item["comparison_quantity"]
+				product.comparison_measure = item["comparison_measure"]
 
 				# inserting product price
 				product.save()
