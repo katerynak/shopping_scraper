@@ -2,14 +2,26 @@
 code for different product similarity functions
 """
 import Levenshtein as lev
+import re
 
-# hyperparameters
+# same product comparison hyperparameters
 max_words_different = 2
 max_word_character_diff = 1
 
 measures = ["gram", "stuks", "per stuk", "stuk(s)", "kg", "g", "ml", "l"]
 
 measures_mapping = {"ml": "g", "l": "kg", "stuks": "stuk(s)", "per stuk": "stuk(s)", "gram": "g"}
+
+conversion = {
+	"kg": lambda q: [q * 1000, "g"],
+	"l": lambda q: [q * 1000, "g"],
+	"gram": lambda q: [q, "g"],
+	"ml": lambda q: [q, "g"],
+	"g": lambda q: [q, "g"],
+	"stuks": lambda q: [q, "stuk(s)"],
+	"per stuk": lambda q: [1, "stuk(s)"],
+	"stuk(s)": lambda q: [q, "stuk(s)"]
+}
 
 
 def lower_str(s):
@@ -28,10 +40,12 @@ def find_measure(s):
 	for m in sorted_measures:
 		if m in s:
 			return m
-	return ""
+	# if the measure is unknown try to parse it anyway assuming that it is placed at the end of the string
+	# after the last numerical character
+	return re.split('(\d+)', s)[-1].strip()
 
 
-def find_quantity(q, m):
+def find_quantity(s, m):
 	"""
 	converts quantity string to float
 	"""
@@ -40,7 +54,7 @@ def find_quantity(q, m):
 		q = 1
 		return q
 	else:
-		q = q.replace(m, "")
+		q = s.replace(m, "")
 
 	# TODO: check for discounts
 	# evaluate mathematical expressions
@@ -49,10 +63,24 @@ def find_quantity(q, m):
 	try:
 		q = float(eval(q))
 	except:
-		print(q)
-		return 0
+		print(f"Failed to convert numerical expression: {q}")
 
 	return q
+
+
+def convert_measure(q, m):
+	"""
+	converting measure and quantity to the default measure useful to compare the product
+	to other products in the db
+	kg, l, ml, gram --> g
+	stuk, stuk(s), per stuk --> stuks
+	"""
+	try:
+		q_new, m_new = conversion[m](q)
+	except(KeyError):
+		print(f"Unknown measure: {m}, not converted to any comparable measures")
+		q_new, m_new = q, m
+	return q_new, m_new
 
 
 def convert_measures(q1, q2, m1, m2):
@@ -167,12 +195,14 @@ def same_product(product1, product2):
 	checks if product1 and product2 are the same product
 	"""
 	# check names and quantities
-	if names_similarity(product1["name"], product2["name"]) and quantity_similarity(product1["quantity"], product2["quantity"]):
+	if names_similarity(product1["name"], product2["name"]) and quantity_similarity(product1["quantity"],
+																					product2["quantity"]):
 		return 1
 	return 0
 
-	# TODO: define product SIMILARITY, check image and/or indgredients as well,
-	#  return something between 0 and 1 based on similarity
+
+# TODO: define product SIMILARITY, check image and/or indgredients as well,
+#  return something between 0 and 1 based on similarity
 
 
 if __name__ == "__main__":
@@ -185,3 +215,9 @@ if __name__ == "__main__":
 	assert names_similarity("Dr. Ristorante pizze tonni", "Dr. Oetker Pizza Ristorante Tonno") == 0
 	assert names_similarity("Dr. oetker Ristorante pizze tonni", "Dr. Oetker Pizza Ristorante Tonno") == 1
 	assert names_similarity("dr. oetker ristorante pizze tonni", "Dr. Oetker Pizza Ristorante Tonno") == 1
+
+	assert find_measure("100kg") == "kg"
+	assert find_measure("100pounds") == "pounds"
+	assert find_quantity("100pounds", "pounds") == 100
+	assert convert_measure(10, "kg") == (10000, "g")
+	assert convert_measure(10, "pounds") == (10, "pounds")
