@@ -27,7 +27,7 @@ if __name__ == "__main__":
         assert env_var in os.environ, (
             "%s environment variable should be defined." % env_var
         )
-    # Connect to the redis queue.
+    # Connect to the redis instance.
     print("connecting to redis...")
     redis_c = redis.Redis(
         host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], charset="utf-8"
