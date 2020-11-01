@@ -1,171 +1,246 @@
-from PIL import Image
-from mongoengine.queryset.visitor import Q
+"""
+Classes of all the item processing pipelines.
+"""
+
+import copy
 import datetime
-from copy import deepcopy
 
-from data_collections.Product import Product
-from data_collections.ProductPrice import ProductPrice
-import product_similarity
+import mongoengine.queryset.visitor as mongo_visitor
+import PIL.Image as Image
 
-
-class SendToOut(object):
-	"""
-	Pushes the scraped data id to redis queue
-	"""
-
-	def process_item(self, product_dict, spider):
-		product = product_dict["product"]
-		out_dict = {}
-		out_dict["product_id"] = str(product.id)
-		out_dict["search_term"] = product.search_term
-		out_dict["shop"] = product_dict["shop"]
-		out_dict["name"] = product.name
-		spider.redis_connection.lpush(spider.output_queue, str(out_dict))
-		return product
+import data_collections as data_colls
+import product_similarity as product_sim
 
 
 class LoadImages(object):
-	"""
-	Loads images in memory to store them in redis
-	"""
+    """
+    Load images in memory.
+    """
 
-	def process_item(self, item, spider):
-		images_dir = spider.settings.get("IMAGES_STORE")
-		if images_dir[-1] != "/":
-			images_dir = images_dir + "/"
-		im = Image.open(images_dir + item["images"][0]["path"])
-		item["image"] = im
+    def process_item(self, item, spider):
+        """
+        Load the image and update the product correspondent field.
 
-		return item
+        :param item: item crawled from spider
+        :param spider: spider who crawled the item
+        :return: product item for the next pipeline
+        """
+        # Load the directory name where images are stored.
+        images_dir = spider.settings.get("IMAGES_STORE")
+        # Append a slash if needed.
+        if images_dir[-1] != "/":
+            images_dir = images_dir + "/"
+        # Read the image from file.
+        image = Image.open(images_dir + item["images"][0]["path"])
+        # Update the item field.
+        item["image"] = image
+        return item
 
 
 class ValidateItems(object):
-	"""
-	Checks if an item is a valid item
-	"""
+    """
+    Checks if an item is a valid item.
+    """
 
-	def process_item(self, item, spider):
-		# to be implemented
-		return item
+    def process_item(self, item, spider):
+        """
+        Check if all the item fields are as expected.
+
+        :param item: item crawled from spider
+        :param spider: spider who crawled the item
+        :return: product item for the next pipeline
+        """
+        raise NotImplementedError
 
 
 class ExtractMeasuresQuantities(object):
-	"""
-	Extracts measures and converts quantities in order to be able to compare the item to others
-	"""
+    """
+    Extract measures and converts quantities for the comparison.
+    """
 
-	def process_item(self, item, spider):
-		measure = product_similarity.find_measure(item["quantity"])
-		quantity = product_similarity.find_quantity(item["quantity"], measure)
-		item["comparison_quantity"], item["comparison_measure"] = \
-			product_similarity.convert_measure(quantity, measure)
-		return item
+    def process_item(self, item, spider):
+        """
+        Extract and normalize measure, quantity and price.
+
+        Extract measure, quantity and price fields, get their correspondent
+        normalized values, that should be used to compare the item to other items.
+
+        :param item: item crawled from spider
+        :param spider: spider who crawled the item
+        :return: product item for the next pipeline
+        """
+        # Extract measure from the quantity field.
+        measure = product_sim.find_measure(item["quantity"])
+        # Extract quantity from the quantity field.
+        quantity = product_sim.find_quantity(item["quantity"], measure)
+        # Obtain the normalized values of measure and quantity fields.
+        (
+            item["comparison_quantity"],
+            item["comparison_measure"],
+        ) = product_sim.convert_measure(quantity, measure)
+        # Convert string price to float.
+        item["price"] = price_to_float(item["price"])
+        # Calculate the unit price.
+        item["unit_price"] = item["price"] / quantity
+        return item
+
+
+def price_to_float(price):
+    """
+    Convert the price string to float.
+
+    :param price: input price string
+    :return: price float
+    """
+    return float(price.replace(",", "."))
+
 
 class SaveItems(object):
-	"""
-	Saves items to the database if not already exist
-	"""
+    """
+    Save items to the database if not already exist.
+    """
 
-	def price_to_float(self, price):
-		"""
-		given the price string returns its float value
-		"""
-		return float(price.replace(",", "."))
+    def update_price(self, item, product):
+        """
+        Inserts new price instance into the database.
 
-	def update_price(self, item, product):
-		"""
-		inserts new price instance in the database
-		"""
-		productPrice = ProductPrice()
-		productPrice.product_id = product.id
-		productPrice.price = self.price_to_float(item["price"])
-		productPrice.shop = item["shop"]
+        :param item: item crawled from spider
+        :param product: product instance inserted into the database
+        """
+        productPrice = data_colls.ProductPrice()
+        productPrice.product_id = product.id
+        productPrice.price = item["price"]
+        productPrice.shop = item["shop"]
+        productPrice.unit_price = item["unit_price"]
 
-		productPrice.save()
+        productPrice.save()
 
-	def process_item(self, item, spider):
+    def process_item(self, item, spider):
+        """
+        Update the database with item info.
 
-		# check if object already exists
-		if "id" in item.fields:
-			if item["shop"] == "coop":
-				product = Product.objects((Q(coop_id=item["id"])))
-			elif item["shop"] == "ah":
-				product = Product.objects((Q(ah_id=item["id"])))
+        Pack the item info as product and product price database instances,
+        insert if not already exist, or update if needed.
 
-		# case 1: product already exists in the db
-		if product:
-			print("already exists!")
-			product = product[0]
-			# check if the price is up to date
-			last_price = ProductPrice.objects((Q(product_id=product.id) & Q(shop=item["shop"]))).order_by('-date')[0]
-			if self.price_to_float(item["price"]) != last_price.price:
-				# update the price
-				product.last_update = datetime.datetime.utcnow()
-				product.save()
-				print("updating the price..")
-				self.update_price(item, product)
-			if item["shop_ranking"] != product[item["shop"]+"_"+"ranking"]:
-				print("updating the shop ranking..")
-				product[item["shop"] + "_" + "ranking"] = item["shop_ranking"]
-				product.last_update = datetime.datetime.utcnow()
-				product.save()
-		else:
-			# check for other shops
+        :param item: item crawled from spider
+        :param spider: spider who crawled the item
+        :return: product item and shop name for the next pipeline
+        """
+        # Check if the product already exists.
+        if "id" in item.fields:
+            if item["shop"] == "coop":
+                product = data_colls.Product.objects(
+                    (mongo_visitor.Q(coop_id=item["id"]))
+                )
+            elif item["shop"] == "ah":
+                product = data_colls.Product.objects(
+                    (mongo_visitor.Q(ah_id=item["id"]))
+                )
+        # Case 1: product already exists in the db.
+        if product:
+            print("Already exists!")
+            product = product[0]
+            # Check if the price is up to date.
+            last_price = data_colls.ProductPrice.objects(
+                (
+                    mongo_visitor.Q(product_id=product.id)
+                    & mongo_visitor.Q(shop=item["shop"])
+                )
+            ).order_by("-date")[0]
+            if item["price"] != last_price.price:
+                # Update the price.
+                product.last_update = datetime.datetime.utcnow()
+                product.save()
+                print("Updating the price..")
+                self.update_price(item, product)
+            if item["shop_ranking"] != product[item["shop"] + "_" + "ranking"]:
+                print("Updating the shop ranking..")
+                product[item["shop"] + "_" + "ranking"] = item["shop_ranking"]
+                product.last_update = datetime.datetime.utcnow()
+                product.save()
+        else:
+            # Check for other shops.
+            #
+            # Quick check first.
+            product = data_colls.Product.objects(
+                (
+                    mongo_visitor.Q(name=item["name"])
+                    & mongo_visitor.Q(quantity=item["quantity"])
+                )
+            )
+            if not product:
+                # Check if the product with slightly different name or quantity format already
+                # exists in the db.
+                if len(data_colls.Product.objects) > 0:
+                    for product2 in data_colls.Product.objects:
+                        if product_sim.same_product(product2, item):
+                            print(
+                                "already exists, with a slightly different name / quantity!"
+                            )
+                            product = product2
+            else:
+                product = product[0]
+            # Case 2: product already exists in another shop.
+            if product:
+                print("already exists, inserting new shop info..")
+                shop = item["shop"] + "_"
+                product[shop + "id"] = item["id"]
+                product[shop + "link"] = item["link"]
+                product[shop + "image"] = item["image"].tobytes()
+                product[shop + "name"] = item["name"]
+                product[shop + "ranking"] = item["shop_ranking"]
+                if item["search_term"] not in product.search_term:
+                    product.search_term.append(item["search_term"])
+                product.last_update = datetime.datetime.utcnow()
+                product.save()
+                # Insert new price instance.
+                self.update_price(item, product)
+            # Case 3: product does not exist in the db.
+            else:
+                print("inserting new object..")
+                product = data_colls.Product()
+                product.name = item["name"]
+                shop = item["shop"] + "_"
+                product[shop + "id"] = item["id"]
+                product[shop + "link"] = item["link"]
+                product[shop + "image"] = item["image"].tobytes()
+                product[shop + "ranking"] = item["shop_ranking"]
+                product.search_term = [item["search_term"]]
+                product.quantity = item["quantity"]
+                product.comparison_quantity = item["comparison_quantity"]
+                product.comparison_measure = item["comparison_measure"]
+                # Inserting product price.
+                product.save()
+                # Insert new price instance.
+                self.update_price(item, product)
+        return {"product": copy.deepcopy(product), "shop": item["shop"]}
 
-			# quick check first
-			product = Product.objects((Q(name=item["name"]) & Q(quantity=item["quantity"])))
 
-			if not product:
-				# check if the product with slightly different name or quantity format already
-				# exists in the db
-				if len(Product.objects) > 0:
-					for product2 in Product.objects:
-						if product_similarity.same_product(product2, item):
-							print("already exists, with a slightly different name / quantity!")
-							product = product2
-			else:
-				product = product[0]
-			# case 2: product already exists in another shop
-			if product:
+class SendToOut(object):
+    """
+    Pushes the scraped data id to the `redis` queue.
+    """
 
-				print("already exists, inserting new shop info..")
+    def process_item(self, item, spider):
+        """
+        Process the received item.
 
-				shop = item["shop"] + "_"
-				product[shop + "id"] = item["id"]
-				product[shop + "link"] = item["link"]
-				product[shop + "image"] = item["image"].tobytes()
-				product[shop + "name"] = item["name"]
+        Pack some of the item's info and send them to the `redis` queue.
 
-				product[shop + "ranking"] = item["shop_ranking"]
-
-				if item["search_term"] not in product.search_term:
-					product.search_term.append(item["search_term"])
-
-				product.last_update = datetime.datetime.utcnow()
-				product.save()
-
-				self.update_price(item, product)
-
-			# case 3: product does not exist in the db
-			else:
-				print("inserting new object..")
-				product = Product()
-				product.name = item["name"]
-				shop = item["shop"] + "_"
-				product[shop + "id"] = item["id"]
-				product[shop + "link"] = item["link"]
-				product[shop + "image"] = item["image"].tobytes()
-
-				product[shop + "ranking"] = item["shop_ranking"]
-
-				product.search_term = [item["search_term"]]
-				product.quantity = item["quantity"]
-
-				product.comparison_quantity = item["comparison_quantity"]
-				product.comparison_measure = item["comparison_measure"]
-
-				# inserting product price
-				product.save()
-				self.update_price(item, product)
-
-		return {"product": deepcopy(product),  "shop": item["shop"]}
+        :param item: a dictionary containing "product" and "shop" fields, where
+            "product" is the product instance inserted into the database, and
+            "shop" is a string with the shop name
+        :param spider: spider who crawled the item
+        :return: product item for the next pipeline
+        """
+        product = item["product"]
+        # Pack selected info for the broker.
+        out_dict = {}
+        out_dict["product_id"] = str(product.id)
+        out_dict["search_term"] = product.search_term
+        out_dict["shop"] = item["shop"]
+        out_dict["name"] = product.name
+        # Send the item to the `redis` queue.
+        spider.redis_connection.lpush(spider.output_queue, str(out_dict))
+        # Return the product item for the next pipeline.
+        return product
