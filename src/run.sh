@@ -8,5 +8,4 @@ docker image rm crawler
 docker image rm broker
 docker image rm client
 
-
 docker-compose up
