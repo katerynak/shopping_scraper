@@ -1,6 +1,11 @@
-Collects the information from the redis queue, processes the results and stores 
-them to the mongodb database.
+Collects the information from the `redis` queue, sorts the results if needed,
+and sends them to the `django` client.
+
+Module organization:
+  - `main.py`: the main loop receiving and sending messages
+  - `data_processing/`: scripts for sorting of the results
 
 TODO: 
-- similar products comparison
-- results ranking
+- [X] Receive the results
+- [ ] Send the results to client
+- [ ] Results ranking

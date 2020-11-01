@@ -11,6 +11,7 @@ class ProductSorter:
 	def __init__(self, searchTerm):
 		self.searchTerm = searchTerm
 		self.best = None
+		self.best_rank = None
 
 	class Alternatives(Enum):
 		ALT1 = "alternative1"
