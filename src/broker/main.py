@@ -8,7 +8,7 @@ import os
 import mongoengine as mongo
 import redis
 
-import data_processing.product_sorter as product_sorter
+import data_sorting.product_sorter as product_sorter
 
 # Environment variables that should be set.
 ENVIRONMENT_VARS = [
