@@ -1,10 +1,15 @@
-from mongoengine import *
 import datetime
 
+import mongoengine as mongo
 
-class ProductPrice(DynamicDocument):
-	product_id = ObjectIdField(primary_key=False)
-	price = FloatField(required=True)
-	date = DateTimeField(default=datetime.datetime.utcnow)
-	shop = StringField(required=True, max_length=50)
-	unit_price = FloatField(required=False)
+
+class ProductPrice(mongo.DynamicDocument):
+    """
+    Definition of product price schema.
+    """
+
+    product_id = mongo.ObjectIdField(primary_key=False)
+    price = mongo.FloatField(required=True)
+    date = mongo.DateTimeField(default=datetime.datetime.utcnow)
+    shop = mongo.StringField(required=True, max_length=50)
+    unit_price = mongo.FloatField(required=False)
