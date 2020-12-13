@@ -100,7 +100,7 @@ def convert_measure(q, m):
     """
     try:
         q_new, m_new = CONVERSION[m](q)
-    except (KeyError):
+    except KeyError:
         print(f"Unknown measure: {m}, not converted to any comparable measures")
         q_new, m_new = q, m
     return q_new, m_new
