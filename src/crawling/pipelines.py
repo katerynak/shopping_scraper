@@ -8,7 +8,8 @@ import datetime
 import mongoengine.queryset.visitor as mongo_visitor
 import PIL.Image as Image
 
-import data_collections as data_colls
+import data_collections.Product as Product
+import data_collections.ProductPrice as ProductPrice
 import product_similarity as product_sim
 
 
@@ -82,6 +83,13 @@ class ExtractMeasuresQuantities(object):
         item["price"] = price_to_float(item["price"])
         # Calculate the unit price.
         item["unit_price"] = item["price"] / quantity
+        # Round unit price to 2 decimals, convert unit price in grams to
+        # kilograms.
+        if item["comparison_measure"] == "g":
+            item["comparison_measure"] = "kg"
+            item["unit_price"] = round(item["unit_price"]*1000, 2)
+        else:
+            item["unit_price"] = round(item["unit_price"], 2)
         return item
 
 
@@ -107,12 +115,12 @@ class SaveItems(object):
         :param item: item crawled from spider
         :param product: product instance inserted into the database
         """
-        productPrice = data_colls.ProductPrice()
+        productPrice = ProductPrice.ProductPrice()
         productPrice.product_id = product.id
         productPrice.price = item["price"]
         productPrice.shop = item["shop"]
         productPrice.unit_price = item["unit_price"]
-
+        productPrice.unit_measure = item["comparison_measure"]
         productPrice.save()
 
     def process_item(self, item, spider):
@@ -129,11 +137,11 @@ class SaveItems(object):
         # Check if the product already exists.
         if "id" in item.fields:
             if item["shop"] == "coop":
-                product = data_colls.Product.objects(
+                product = Product.Product.objects(
                     (mongo_visitor.Q(coop_id=item["id"]))
                 )
             elif item["shop"] == "ah":
-                product = data_colls.Product.objects(
+                product = Product.Product.objects(
                     (mongo_visitor.Q(ah_id=item["id"]))
                 )
         # Case 1: product already exists in the db.
@@ -141,7 +149,7 @@ class SaveItems(object):
             print("Already exists!")
             product = product[0]
             # Check if the price is up to date.
-            last_price = data_colls.ProductPrice.objects(
+            last_price = ProductPrice.ProductPrice.objects(
                 (
                     mongo_visitor.Q(product_id=product.id)
                     & mongo_visitor.Q(shop=item["shop"])
@@ -162,7 +170,7 @@ class SaveItems(object):
             # Check for other shops.
             #
             # Quick check first.
-            product = data_colls.Product.objects(
+            product = Product.Product.objects(
                 (
                     mongo_visitor.Q(name=item["name"])
                     & mongo_visitor.Q(quantity=item["quantity"])
@@ -171,8 +179,8 @@ class SaveItems(object):
             if not product:
                 # Check if the product with slightly different name or quantity format already
                 # exists in the db.
-                if len(data_colls.Product.objects) > 0:
-                    for product2 in data_colls.Product.objects:
+                if len(Product.Product.objects) > 0:
+                    for product2 in Product.Product.objects:
                         if product_sim.same_product(product2, item):
                             print(
                                 "already exists, with a slightly different name / quantity!"
@@ -198,9 +206,11 @@ class SaveItems(object):
             # Case 3: product does not exist in the db.
             else:
                 print("inserting new object..")
-                product = data_colls.Product()
+                product = Product.Product()
                 product.name = item["name"]
                 shop = item["shop"] + "_"
+                product[shop] = shop
+                product["link"] = item["link"]
                 product[shop + "id"] = item["id"]
                 product[shop + "link"] = item["link"]
                 product[shop + "image"] = item["image"].tobytes()
