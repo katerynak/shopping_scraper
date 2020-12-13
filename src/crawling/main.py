@@ -5,10 +5,14 @@ import os
 
 import mongoengine as mongo
 import redis
-import scrapy
-import twisted.internet as tw_internet
+import scrapy.crawler
+import scrapy.settings
+import scrapy.utils
+import scrapy.utils.log
+import twisted.internet.reactor
 
-import data_collections
+import data_collections.Product as Product
+import data_collections.ProductPrice as ProductPrice
 import spiders.ah_spider as ah_spider
 import spiders.coop_spider as coop_spider
 
@@ -76,10 +80,10 @@ def clean_database():
     Function used for debugging.
     """
     # Delete product items.
-    products_to_delete = data_collections.Product.objects()
+    products_to_delete = Product.Product.objects
     products_to_delete.delete()
     # Delete product prices items.
-    products_to_delete = data_collections.ProductPrice.objects()
+    products_to_delete = ProductPrice.ProductPrice.objects
     products_to_delete.delete()
 
 
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     print("connection to mongodb created")
     # TODO: remove when no more necessary.
     # Debugging: clean the database.
-    clean_database()
+    # clean_database()
     # Wait for the user input.
     products = [wait_for_input()]
     # Spiders list.
@@ -153,5 +157,5 @@ if __name__ == "__main__":
     scrapy.utils.log.configure_logging()
     # Run scrapers in parallel.
     d = runner.join()
-    d.addBoth(lambda _: tw_internet.reactor.stop())
-    tw_internet.reactor.run()
+    d.addBoth(lambda _: twisted.internet.reactor.stop())
+    twisted.internet.reactor.run()
