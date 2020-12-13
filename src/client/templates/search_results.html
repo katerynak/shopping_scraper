@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex">
+  <title>Search results </title>
+  <script
+  src="https://code.jquery.com/jquery-2.2.4.min.js"
+  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+  crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+  <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+  <style type='text/css'>
+    .row-index {
+      width: 50px;
+      display: inline-block;
+    }
+  </style>
+  <script type='text/javascript'>
+    function refresh_results(){
+      var text = "{{ product_name }}"
+      // var table_rows = $('#table').bootstrapTable('getData')
+      // var dict_ = {
+      //   'table_data': table_rows,
+      //   'search_term': text
+      // };
+      // console.log(dict_);
+      // data_old = $('#table').bootstrapTable()
+      opt = $('#table').bootstrapTable('getOptions');
+      $.ajax({
+        url: "/results_list2",
+        type: "get",
+        data: {jsdata: text},
+        // data: dict_,
+        dataType: "json",
+        success: function (d) {
+          $('#table').bootstrapTable({
+                data: d["data"],
+                columns: d["columns"],
+                sortName: opt['sortName'],
+                sortOrder: opt['sortOrder']
+            })
+          ;
+          $('#table').bootstrapTable("load", d["data"]);
+        },
+        error: function (xhr) {
+          //Do Something to handle error
+        }
+      })
+
+    setTimeout(refresh_results, 5000);
+    }
+    refresh_results();
+  </script>
+</head>
+<body>
+<!--<div id="place_for_results"></div>-->
+  <div class="container" style="padding: 10px; ">
+    <h1>{{title}}</h1>
+    <br/>
+    <div id="toolbar"></div>
+    <table
+      id="table"
+      data-toggle="true"
+      data-toolbar="#toolbar"
+      data-search="true"
+      data-show-columns="true"
+      data-pagination="true"
+      data-height="500">
+    </table>
+  </div>
+</body>
+</html>
