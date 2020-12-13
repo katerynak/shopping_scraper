@@ -1,7 +1,7 @@
 version: '3'
 services:
 
-#remember to set password when going online
+# Remember to set password when going online.
 
   mongodb:
     container_name: mongodb
@@ -89,11 +89,11 @@ services:
     hostname: client
     build:
       context: ./
-      dockerfile: ./django_project/Dockerfile
+      dockerfile: ./client/Dockerfile
     image: client
     ports:
-      - 8000:8000
-    command: python manage.py runserver 0.0.0.0:8000
+      - 5000:5000
+    command: python main.py
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
