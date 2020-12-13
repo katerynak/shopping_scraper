@@ -5,9 +5,10 @@ A personal ongoing project to learn some tools such as `scrapy`, `MongoDB`,
 `Redis`, `Docker` and `Django`.
 
 TODO: 
-  - [ ] Consider `flask` to implement frontend
+  - [x] Consider `flask` to implement frontend
   - [ ] Add the architecture diagram
   - [ ] Describe folders organization
   - [ ] Add an example of the user interface
   - [ ] Add an example of a result
   - [ ] Explain how to run the project
+  - [ ] Stop the crawler as a new request arrives
