@@ -6,8 +6,8 @@ table. The user can sort the results by name, price or unit price.
 
 Module organization:
   - `main.py`: the main flask app where the endpoints are defined
-  - `static/`: definition of items to crawle
-  - `templates/`: contains classes of all the item processing pipelines
+  - `static/`: style + images
+  - `templates/`: html/js page templates
 
 TODO:
   - [ ] Show more info in the results page
