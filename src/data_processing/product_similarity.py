@@ -101,7 +101,7 @@ def convert_measure(q, m):
     try:
         q_new, m_new = CONVERSION[m](q)
     except KeyError:
-        print(f"Unknown measure: {m}, not converted to any comparable measures")
+        print(f"Unknown measure: {m}, not converted to any comparable measures.")
         q_new, m_new = q, m
     return q_new, m_new
 
@@ -109,7 +109,7 @@ def convert_measure(q, m):
 # TODO: replace usages of this function with the function above.
 def _convert_measures(q1, q2, m1, m2):
     """
-    Convert m1 to corresponding m2, correcting quantities if needed
+    Convert m1 to corresponding m2, correcting quantities if needed.
     """
     # kg to grams, l to ml.
     if m1 != m2:
