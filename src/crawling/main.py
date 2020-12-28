@@ -135,27 +135,29 @@ if __name__ == "__main__":
     print("connection to mongodb created")
     # TODO: remove when no more necessary.
     # Debugging: clean the database.
-    # clean_database()
-    # Wait for the user input.
-    products = [wait_for_input()]
-    # Spiders list.
-    shop_spiders = [ah_spider.AHSpider, coop_spider.CoopSpider]
-    # Get scrapy default settings.
-    settings = scrapy.settings.Settings()
-    # Set custom settings.
-    set_settings(settings)
-    # Initialize crawler runner.
-    runner = scrapy.crawler.CrawlerRunner(settings=settings)
-    # Create a crawler for each product to scrape and for each shop to scrape
-    # from.
-    for product in products:
-        for shop_spider in shop_spiders:
-            _ = runner.crawl(
-                shop_spider, product, redis_connection, crawler_output_queue
-            )
-    # Configure scrapy logging.
-    scrapy.utils.log.configure_logging()
-    # Run scrapers in parallel.
-    d = runner.join()
-    d.addBoth(lambda _: twisted.internet.reactor.stop())
-    twisted.internet.reactor.run()
+    clean_database()
+    while True:
+        # Wait for the user input.
+        products = [wait_for_input()]
+        # Spiders list.
+        shop_spiders = [ah_spider.AHSpider, coop_spider.CoopSpider]
+        # shop_spiders = [ah_spider.AHSpider]
+        # Get scrapy default settings.
+        settings = scrapy.settings.Settings()
+        # Set custom settings.
+        set_settings(settings)
+        # Initialize crawler runner.
+        runner = scrapy.crawler.CrawlerRunner(settings=settings)
+        # Create a crawler for each product to scrape and for each shop to scrape
+        # from.
+        for product in products:
+            for shop_spider in shop_spiders:
+                _ = runner.crawl(
+                    shop_spider, product, redis_connection, crawler_output_queue
+                )
+        # Configure scrapy logging.
+        scrapy.utils.log.configure_logging()
+        # Run scrapers in parallel.
+        d = runner.join()
+        d.addBoth(lambda _: twisted.internet.reactor.stop())
+        twisted.internet.reactor.run()
