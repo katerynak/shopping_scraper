@@ -12,6 +12,3 @@ COPY ./data_collections ./data_collections
 
 RUN chown -R user:user /home/user
 USER user
-
-EXPOSE 5000
-CMD ["python", "main.py"]
