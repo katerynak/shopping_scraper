@@ -12,5 +12,7 @@ class ProductPrice(mongo.DynamicDocument):
     price = mongo.FloatField(required=True)
     date = mongo.DateTimeField(default=datetime.datetime.utcnow)
     shop = mongo.StringField(required=True, max_length=50)
+    shop_link = mongo.URLField(required=False)
+    image_link = mongo.URLField(required=False)
     unit_price = mongo.FloatField(required=False)
     unit_measure = mongo.StringField(required=False, max_length=50)
