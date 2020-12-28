@@ -2,7 +2,7 @@ Shopping web scraper: scrapes products from different supermarkets, processes
 and organizes the results, sorts the results as requested by the user.
 
 A personal ongoing project to learn some tools such as `scrapy`, `MongoDB`, 
-`Redis`, `Docker` and `Django`.
+`Redis`, `Docker` and `flask`.
 
 TODO: 
   - [x] Consider `flask` to implement frontend
