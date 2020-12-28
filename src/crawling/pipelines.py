@@ -82,7 +82,7 @@ class ExtractMeasuresQuantities(object):
         # Convert string price to float.
         item["price"] = price_to_float(item["price"])
         # Calculate the unit price.
-        item["unit_price"] = item["price"] / quantity
+        item["unit_price"] = item["price"] / item["comparison_quantity"]
         # Round unit price to 2 decimals, convert unit price in grams to
         # kilograms.
         if item["comparison_measure"] == "g":
