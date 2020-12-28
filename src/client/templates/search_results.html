@@ -13,9 +13,27 @@
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
   <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
   <style type='text/css'>
+    body {
+      background-image: url('../static/images/food.jpg');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: 100% 100%;
+    }
+    h1 {
+      color: white;
+      text-align:center;
+    }
     .row-index {
       width: 50px;
       display: inline-block;
+    }
+    .layer {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     }
   </style>
   <script type='text/javascript'>
@@ -58,10 +76,11 @@
   </script>
 </head>
 <body>
+<div class="layer">
+<h1><span>{{title}}</span></h1>
+<br/>
 <!--<div id="place_for_results"></div>-->
-  <div class="container" style="padding: 10px; ">
-    <h1>{{title}}</h1>
-    <br/>
+  <div class="container" style="padding: 10px; background-color: rgba(255, 255, 255, 0.9); border-radius: 25px;">
     <div id="toolbar"></div>
     <table
       id="table"
@@ -73,5 +92,6 @@
       data-height="500">
     </table>
   </div>
+</div>
 </body>
 </html>
