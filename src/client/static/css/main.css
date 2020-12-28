@@ -462,7 +462,7 @@ legend {
   -ms-flex-align: center;
       align-items: center;
   font-family: 'Poppins', sans-serif;
-  background: url("../images/market.jpg");
+  background: linear-gradient( rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3) ), url("../images/market.jpg");
   background-size: cover;
   background-position: center center;
   padding: 15px;
