@@ -1,3 +1,5 @@
+import logging
+
 import scrapy
 
 from items import Product
@@ -44,14 +46,13 @@ class AHSpider(scrapy.Spider):
 		"""
 		# self.save_page(response)
 		names = response.xpath("//strong[@data-testhook='product-title']/span/text()").getall()
-		images = response.xpath("//img[starts-with(@class, 'lazy-image__')]/@src").getall()
+		images = response.xpath("//img[starts-with(@class, 'lazy-image_')]/@src").getall()
 		prices = response.xpath("//div[contains(@class, 'price-amount_highlight')]//text()").getall()
 		# assuming each price is composed of euros and eurocents
 		prices = [prices[i] + prices[i + 1] + prices[i + 2] for i in range(0, len(prices), 3)]
 		quantities = response.xpath("//span[@data-testhook='product-unit-size']/text()").getall()
 		product_links = response.xpath("//a[starts-with(@class, 'link_root')]/@href").getall()
 		product_links = [self.shop_url + product_links[i] for i in range(0, len(product_links), 2)]
-
 		for i in range(len(names)):
 			product = Product()
 			product["search_term"] = self.search_term
@@ -66,5 +67,6 @@ class AHSpider(scrapy.Spider):
 				if "wi" in el:
 					product["id"] = el[2:]
 			product["image_urls"] = [images[i]]
+
 
 			yield product
