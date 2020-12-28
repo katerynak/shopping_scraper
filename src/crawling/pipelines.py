@@ -10,7 +10,7 @@ import PIL.Image as Image
 
 import data_collections.Product as Product
 import data_collections.ProductPrice as ProductPrice
-import product_similarity as product_sim
+import data_processing.product_similarity as product_sim
 
 
 class LoadImages(object):
@@ -119,6 +119,8 @@ class SaveItems(object):
         productPrice.product_id = product.id
         productPrice.price = item["price"]
         productPrice.shop = item["shop"]
+        productPrice.shop_link = item["link"]
+        productPrice.image_link = item["image_urls"][0]
         productPrice.unit_price = item["unit_price"]
         productPrice.unit_measure = item["comparison_measure"]
         productPrice.save()
