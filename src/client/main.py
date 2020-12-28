@@ -11,7 +11,7 @@ import redis
 import data_collections.Product as Product
 import data_collections.ProductPrice as ProductPrice
 
-# other column settings -> http://bootstrap-table.wenzhixin.net.cn/documentation/#column-options
+# Other column settings -> http://bootstrap-table.wenzhixin.net.cn/documentation/#column-options
 # Search results table columns.
 PRODUCT_COLUMNS = [
   {
@@ -19,15 +19,20 @@ PRODUCT_COLUMNS = [
     "title": "name", # display as the table header's name
     "sortable": True,
   },
-  {
-    "field": "shop",
-    "title": "shop",
-    "sortable": True,
-  },
+  # {
+  #   "field": "shop",
+  #   "title": "shop",
+  #   "sortable": True,
+  # },
   {
     "field": "price (€)",
     "title": "price (€)",
     "sortable": True,
+  },
+  {
+      "field": "quantity",
+      "title": "quantity",
+      "sortable": True
   },
   {
     "field": "unit price (€)",
@@ -38,7 +43,15 @@ PRODUCT_COLUMNS = [
     "field": "unit measure",
     "title": "unit measure",
     "sortable": True,
-  }
+  },
+    {
+    "field": "shop_link",
+    "title": "link",
+    "sortable": True
+    },
+    {"field": "image",
+     "title": "image",
+     }
 ]
 
 app = flask.Flask(__name__)
@@ -133,10 +146,13 @@ def _get_search_products(search_term: str) -> List[Dict[str, Any]]:
             item = {}
             # Extract product info.
             item["name"] = str(product.name)
-            item["shop"] = str(price.shop)
-            item["price (€)"] = str(price.price)
-            item["unit price (€)"] = str(price.unit_price)
+            # item["shop"] = str(price.shop)
+            item["price (€)"] = price.price
+            item["unit price (€)"] = price.unit_price
             item["unit measure"] = str(price.unit_measure)
+            item["quantity"] = str(product.quantity)
+            item["shop_link"] = f"<a href=\"{str(price.shop_link)}\">{str(price.shop)}</a>"
+            item["image"] = f"<img src=\"{price.image_link}\"  width=\"100\" height=\"100\">"
             res_list.append(item)
     return res_list
 
