@@ -10,12 +10,12 @@ RUN pip install --no-cache-dir redis==3.5.3
 RUN pip install --no-cache-dir pillow==8.0.1
 RUN pip install --no-cache-dir python-Levenshtein==0.12.0
 
-
-COPY ./data_collections ./data_collections
-COPY ./data_processing/product_similarity.py ./
 COPY ./crawling .
+COPY ./data_collections ./data_collections
+COPY ./data_processing/ ./data_processing
+
 RUN mkdir /home/user/images
 RUN chown -R user:user /home/user
 USER user
 
-CMD ["python", "main.py"]
+# CMD ["python", "main.py"]
