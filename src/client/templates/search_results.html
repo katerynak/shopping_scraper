@@ -57,10 +57,10 @@
         success: function (d) {
           if (Object.keys(d["data"]).length > num_products){
             $('#table').bootstrapTable({
-                  data: d["data"],
-                  columns: d["columns"],
-                  sortName: opt["sortName"],
-                  sortOrder: opt["sortOrder"]
+              data: d["data"],
+              columns: d["columns"],
+              sortName: opt["sortName"],
+              sortOrder: opt["sortOrder"]
               });
             $('#table').bootstrapTable("load", d["data"]);
             num_products = Object.keys(d["data"]).length;
