@@ -19,11 +19,6 @@ PRODUCT_COLUMNS = [
     "title": "name", # display as the table header's name
     "sortable": True,
   },
-  # {
-  #   "field": "shop",
-  #   "title": "shop",
-  #   "sortable": True,
-  # },
   {
     "field": "price (€)",
     "title": "price (€)",
