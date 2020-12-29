@@ -53,7 +53,6 @@ services:
       - REDIS_PORT=6379
       - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
-      - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
     networks:
       - crawler_network
 #    volumes:
@@ -84,48 +83,16 @@ services:
       - MONGODB_PORT=27017
       - MONGODB_NAME=mydb
       - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
-      - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
 
     networks:
       - bridge
     depends_on:
       - redis
       - mongodb
-      - broker
       - crawler
     restart: always
     deploy:
       replicas: 1
-
-  broker:
-    hostname: broker
-    build:
-      context: ./
-      dockerfile: ./broker/Dockerfile
-    image: broker
-    volumes:
-      - './broker:/home/user'
-      - './data_collections:/home/user/data_collections'
-      - './data_processing/:/home/user/data_processing'
-    command: python main.py
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - MONGODB_HOST=mongodb
-      - MONGODB_PORT=27017
-      - MONGODB_NAME=mydb
-      - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
-      - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
-      - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
-    networks:
-      - bridge
-      - crawler_network
-    depends_on:
-      - redis
-      - mongodb
-    deploy:
-      replicas: 1
-
 
 
 networks:

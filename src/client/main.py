@@ -19,11 +19,6 @@ PRODUCT_COLUMNS = [
     "title": "name", # display as the table header's name
     "sortable": True,
   },
-  # {
-  #   "field": "shop",
-  #   "title": "shop",
-  #   "sortable": True,
-  # },
   {
     "field": "price (€)",
     "title": "price (€)",
@@ -59,7 +54,6 @@ app = flask.Flask(__name__)
 # Checking for the environment vars.
 for var_name in [
    "CRAWLER_PRODUCTS_INPUT_QUEUE",
-   "BROKER_PRODUCTS_OUTPUT_QUEUE",
    "REDIS_HOST",
    "REDIS_PORT",
    "MONGODB_HOST",
