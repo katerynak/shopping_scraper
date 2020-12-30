@@ -55,6 +55,7 @@ app = flask.Flask(__name__)
 for var_name in [
    "CRAWLER_PRODUCTS_INPUT_QUEUE",
    "BROKER_PRODUCTS_OUTPUT_QUEUE",
+   "BROKER_PRODUCTS_INPUT_QUEUE",
    "REDIS_HOST",
    "REDIS_PORT",
    "MONGODB_HOST",
@@ -89,7 +90,7 @@ def index():
 def search_results(product_name):
    # Send a message for the crawler through redis.
    redis_connection.lpush(
-      os.environ["CRAWLER_PRODUCTS_INPUT_QUEUE"], product_name
+      os.environ["BROKER_PRODUCTS_INPUT_QUEUE"], product_name
    )
    # Go to the results page.
    return flask.render_template('search_results.html',
@@ -141,7 +142,6 @@ def _get_search_products(search_term: str) -> List[Dict[str, Any]]:
             item = {}
             # Extract product info.
             item["name"] = str(product.name)
-            # item["shop"] = str(price.shop)
             item["price (€)"] = price.price
             item["unit price (€)"] = price.unit_price
             item["unit measure"] = str(price.unit_measure)
