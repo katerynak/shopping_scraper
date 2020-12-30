@@ -127,6 +127,7 @@ class SaveItems(object):
         productPrice.image_link = item["image_urls"][0]
         productPrice.unit_price = item["unit_price"]
         productPrice.unit_measure = item["comparison_measure"]
+        productPrice.search_term = item["search_term"]
         productPrice.save()
 
     def process_item(self, item, spider):
