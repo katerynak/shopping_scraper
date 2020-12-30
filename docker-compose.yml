@@ -35,8 +35,8 @@ services:
   crawler:
     hostname: crawler
     build:
-      context: ./
-      dockerfile: ./crawling/Dockerfile
+      context: src
+      dockerfile: crawling/Dockerfile
     image: crawler
     volumes:
       - './crawling:/home/user'
@@ -68,8 +68,8 @@ services:
   client:
     hostname: client
     build:
-      context: ./
-      dockerfile: ./client/Dockerfile
+      context: src
+      dockerfile: client/Dockerfile
     image: client
     volumes:
       - './client:/home/user'
@@ -101,8 +101,8 @@ services:
   broker:
     hostname: broker
     build:
-      context: ./
-      dockerfile: ./broker/Dockerfile
+      context: src
+      dockerfile: broker/Dockerfile
     image: broker
     volumes:
       - './broker:/home/user'
