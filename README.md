@@ -1,7 +1,7 @@
 Shopping web scraper: scrapes products from different supermarkets, processes
 and organizes the results, sorts the results as requested by the user.
 
-A personal ongoing project to learn some tools such as `scrapy`, `MongoDB`, 
+A personal project to learn some tools such as `scrapy`, `MongoDB`, 
 `Redis`, `Docker` and `flask`.
 
 ## Usage
@@ -10,7 +10,6 @@ Shop scraper is delivered with `docker` and good to go with `docker-compose`:
 ```bash
 > docker-compose up
 ```
-if you want, for example, 4 instances of crawlers to crawl in parallel.
 
 If you need to remove all the old images containers, and build new ones, start
 the app by running the script:
@@ -32,7 +31,7 @@ Digit the search term and press `Search` to see the results page:
 ![img_1.png](figures/results_page.png)
 
 Here you can see the results from different supermarkets in a single table,
-with product name, shop price, calculated unit price and unit measure, image and
+with product name, shop price, unit price and unit measure, image and
 a link to the shop.
 
 All the columns are sortable (except the 'image' column), and there is a search
