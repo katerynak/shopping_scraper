@@ -8,7 +8,6 @@ from items import Product
 class AHSpider(scrapy.Spider):
     name = "ahSpider"
     search_term = None
-    # TODO: try to not use this url
     shop_search_url = "https://www.ah.nl/zoeken"
     shop_url = "https://www.ah.nl"
 
