@@ -28,39 +28,39 @@ ENVIRONMENT_VARS = [
 ]
 
 
-def set_settings(settings):
+def set_settings(settings_):
     """
     Settings useful to not get blocked & blacklisted.
 
-    :param settings: scrapy settings instance
+    :param settings_: scrapy settings instance
     :return:
     """
-    settings.set("BOT_NAME", "tutorial")
-    settings.set(
+    settings_.set("BOT_NAME", "tutorial")
+    settings_.set(
         "USER_AGENT",
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, "
         "like Gecko) snap Chromium/78.0.3904.108 Chrome/78.0.3904.108 "
         "Safari/537.36",
     )
-    settings.set("ROBOTSTXT_OBEY", False)
-    settings.set("CONCURRENT_REQUESTS_PER_DOMAIN", 1)
-    settings.set("CONCURRENT_REQUESTS_PER_IP", 1)
-    settings.set(
+    settings_.set("ROBOTSTXT_OBEY", False)
+    settings_.set("CONCURRENT_REQUESTS_PER_DOMAIN", 1)
+    settings_.set("CONCURRENT_REQUESTS_PER_IP", 1)
+    settings_.set(
         "DEFAULT_REQUEST_HEADERS",
         {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4",
         },
     )
-    settings.set("HTTPCACHE_ENABLED", False)
-    settings.set("FEED_EXPORT_ENCODING", "utf-8")
-    settings.set("LOG_FILE", "log.txt")
-    settings.set("LOGENABLED", True)
-    settings.set("STATS_ENABLED", True)
-    settings.set("AUTOTHROTTLE_TARGET_CONCURRENCY", 1.0)
-    settings.set("COOKIES_ENABLED", False)
-    settings.set("DOWNLOAD_DELAY", 3)
-    settings.set(
+    settings_.set("HTTPCACHE_ENABLED", False)
+    settings_.set("FEED_EXPORT_ENCODING", "utf-8")
+    settings_.set("LOG_FILE", "log.txt")
+    settings_.set("LOGENABLED", True)
+    settings_.set("STATS_ENABLED", True)
+    settings_.set("AUTOTHROTTLE_TARGET_CONCURRENCY", 1.0)
+    settings_.set("COOKIES_ENABLED", False)
+    settings_.set("DOWNLOAD_DELAY", 3)
+    settings_.set(
         "ITEM_PIPELINES",
         {
             "scrapy.pipelines.images.ImagesPipeline": 1,
@@ -70,7 +70,7 @@ def set_settings(settings):
             "pipelines.SendToOut": 5,
         },
     )
-    settings.set("IMAGES_STORE", "images")
+    settings_.set("IMAGES_STORE", "images")
 
 
 def clean_database():
@@ -133,15 +133,13 @@ if __name__ == "__main__":
         port=int(os.environ["MONGODB_PORT"]),
     )
     print("connection to mongodb created")
-    # TODO: remove when no more necessary.
     # Debugging: clean the database.
-    clean_database()
+    # clean_database()
     while True:
         # Wait for the user input.
         products = [wait_for_input()]
         # Spiders list.
         shop_spiders = [ah_spider.AHSpider, coop_spider.CoopSpider]
-        # shop_spiders = [ah_spider.AHSpider]
         # Get scrapy default settings.
         settings = scrapy.settings.Settings()
         # Set custom settings.
