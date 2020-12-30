@@ -1,8 +1,6 @@
 version: '3'
 services:
 
-# Remember to set password when going online.
-
   mongodb:
     container_name: mongodb
     hostname: mongodb
@@ -54,11 +52,13 @@ services:
       - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
       - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
+      - BROKER_PRODUCTS_INPUT_QUEUE=broker_products_input_queue
     networks:
       - crawler_network
 #    volumes:
 #      - images:/home/user/images
     depends_on:
+      - broker
       - redis
       - mongodb
     restart: always
@@ -85,6 +85,7 @@ services:
       - MONGODB_NAME=mydb
       - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
+      - BROKER_PRODUCTS_INPUT_QUEUE=broker_products_input_queue
 
     networks:
       - bridge
@@ -106,7 +107,7 @@ services:
     volumes:
       - './broker:/home/user'
       - './data_collections:/home/user/data_collections'
-      - './data_processing/:/home/user/data_processing'
+      - './data_processing:/home/user/data_processing'
     command: python main.py
     environment:
       - REDIS_HOST=redis
@@ -117,6 +118,7 @@ services:
       - CRAWLER_PRODUCTS_INPUT_QUEUE=crawler_products_input_queue
       - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
       - BROKER_PRODUCTS_OUTPUT_QUEUE=broker_products_output_queue
+      - BROKER_PRODUCTS_INPUT_QUEUE=broker_products_input_queue
     networks:
       - bridge
       - crawler_network
@@ -125,8 +127,6 @@ services:
       - mongodb
     deploy:
       replicas: 1
-
-
 
 networks:
   bridge:
