@@ -1,4 +1,4 @@
-Shopping web scraper: scrapes products from different supermarkets, processes
+Shopping web scraper: scrapes products from different Dutch supermarkets, processes
 and organizes the results, sorts the results as requested by the user.
 
 A personal project to learn some tools such as `scrapy`, `MongoDB`, 
@@ -30,6 +30,8 @@ Digit the search term and press `Search` to see the results page:
 
 ![img_1.png](figures/results_page.png)
 
+Note: digit the search term in Dutch since the supermarkets of interest are from
+the Netherlands.
 Here you can see the results from different supermarkets in a single table,
 with product name, shop price, unit price and unit measure, image and
 a link to the shop.
