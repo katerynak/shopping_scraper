@@ -259,7 +259,3 @@ def same_product(product1, product2):
         return 1
     else:
         return 0
-
-
-# TODO: define product SIMILARITY, check image and/or indgredients as well,
-#  return something between 0 and 1 based on similarity
