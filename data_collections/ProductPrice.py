@@ -7,7 +7,6 @@ class ProductPrice(mongo.DynamicDocument):
     """
     Definition of product price schema.
     """
-
     product_id = mongo.ObjectIdField(primary_key=False)
     search_term = mongo.StringField(required=True)
     price = mongo.FloatField(required=True)
