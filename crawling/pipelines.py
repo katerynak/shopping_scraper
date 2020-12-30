@@ -142,6 +142,7 @@ class SaveItems(object):
         :return: product item and shop name for the next pipeline
         """
         # Check if the product already exists.
+        product = []
         if "id" in item.fields:
             if item["shop"] == "coop":
                 product = Product.Product.objects(
@@ -151,8 +152,9 @@ class SaveItems(object):
                 product = Product.Product.objects(
                     (mongo_visitor.Q(ah_id=item["id"]))
                 )
+                print(product)
         # Case 1: product already exists in the db.
-        if product:
+        if len(product) > 0:
             print("Already exists!")
             product = product[0]
             # Check if the price is up to date.
