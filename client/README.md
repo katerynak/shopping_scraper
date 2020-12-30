@@ -8,7 +8,3 @@ Module organization:
   - `main.py`: the main flask app where the endpoints are defined
   - `static/`: style + images
   - `templates/`: html/js page templates
-
-TODO:
-  - [ ] Show more info in the results page
-  - [ ] Add product images to the results page
