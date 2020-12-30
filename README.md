@@ -39,7 +39,7 @@ bar where you can search for a particular product.
 
 ## Architecture
 
-The project is composed by different units, each of them is a docker container
+The project is composed of different units, each of them is a docker container
 (except `Client` and `Back-end` units which are placed in a single container).
 The communication is done by using message-passing through `redis` over docker
 networks.
