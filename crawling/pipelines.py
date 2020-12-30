@@ -88,11 +88,11 @@ class ExtractMeasuresQuantities(object):
             # kilograms.
             if item["comparison_measure"] == "g":
                 item["comparison_measure"] = "kg"
-                item["unit_price"] = round(item["unit_price"]*1000, 2)
+                item["unit_price"] = round(item["unit_price"] * 1000, 2)
             else:
                 item["unit_price"] = round(item["unit_price"], 2)
         else:
-            item["unit_price"] = 0.
+            item["unit_price"] = 0.0
             item["comparison_measure"] = "No measure found"
         return item
 
@@ -145,13 +145,9 @@ class SaveItems(object):
         product = []
         if "id" in item.fields:
             if item["shop"] == "coop":
-                product = Product.Product.objects(
-                    (mongo_visitor.Q(coop_id=item["id"]))
-                )
+                product = Product.Product.objects((mongo_visitor.Q(coop_id=item["id"])))
             elif item["shop"] == "ah":
-                product = Product.Product.objects(
-                    (mongo_visitor.Q(ah_id=item["id"]))
-                )
+                product = Product.Product.objects((mongo_visitor.Q(ah_id=item["id"])))
                 print(product)
         # Case 1: product already exists in the db.
         if len(product) > 0:

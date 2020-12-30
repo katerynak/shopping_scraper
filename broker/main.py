@@ -62,7 +62,7 @@ def present_in_db(search_term, time_delta):
     # Look for product into the db.
     product_prices = ProductPrice.ProductPrice.objects(
         (mongo_visitor.Q(search_term=search_term))
-    ).order_by('date')
+    ).order_by("date")
     if len(product_prices) == 0:
         return False
     last_insertion_datetime = product_prices[0].date
