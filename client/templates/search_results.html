@@ -38,21 +38,14 @@
   </style>
   <script type='text/javascript'>
     var num_products = 0;
+    // Function that gets the new scraped data.
     function refresh_results(){
       var text = "{{ product_name }}"
-      // var table_rows = $('#table').bootstrapTable('getData')
-      // var dict_ = {
-      //   'table_data': table_rows,
-      //   'search_term': text
-      // };
-      // console.log(dict_);
-      // data_old = $('#table').bootstrapTable()
       opt = $('#table').bootstrapTable('getOptions');
       $.ajax({
-        url: "/results_list2",
+        url: "/results_list",
         type: "get",
         data: {jsdata: text},
-        // data: dict_,
         dataType: "json",
         success: function (d) {
           if (Object.keys(d["data"]).length > num_products){
@@ -70,6 +63,7 @@
           //Do Something to handle error
         }
       })
+    # Refresh the results page every 5 seconds.
     setTimeout(refresh_results, 5000);
     }
     refresh_results();
