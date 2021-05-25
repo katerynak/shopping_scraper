@@ -102,8 +102,8 @@ def search():
     return flask.redirect(flask.url_for("search_results", product_name=product))
 
 
-@app.route("/results_list2")
-def results_list2():
+@app.route("/results_list")
+def results_list():
     search_term = flask.request.args.get("jsdata")
     items = _get_search_products(search_term)
     d = {"data": items, "columns": PRODUCT_COLUMNS}
